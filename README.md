@@ -9,10 +9,6 @@ A user-friendly yet highly customizable animated QR code and barcode generator f
 - Square, rounded or dot modules, square or rounded finder patterns, solid colors or linear / radial gradients
 - Optional logo (image or any custom element) and label above or below the code
 
-| Android | iOS |
-| - | - |
-| ![Example app on Android](docs/assets/home-android.png) | ![Example app on iOS](docs/assets/home-ios.png) |
-
 Behind the scenes:
 
 - Codes are drawn with [`react-native-svg`](https://github.com/software-mansion/react-native-svg).
@@ -22,21 +18,21 @@ Behind the scenes:
 
 ## Preview
 
-### Animation presets & styles
+### QR code
 
 | Ripple + logo fill | Sweep top → bottom | Spiral dots + gradient |
 |:---:|:---:|:---:|
 | ![Ripple with logo fill](docs/assets/ripple-logo.gif) | ![Sweep top to bottom](docs/assets/sweep.gif) | ![Spiral dots with gradient](docs/assets/spiral-gradient.gif) |
 | **Random + radial gradient** | **Fade + top label** | **Scale on dark background** |
 | ![Random with radial gradient](docs/assets/random-radial.gif) | ![Fade with top label](docs/assets/fade-label.gif) | ![Scale on dark background](docs/assets/scale-dark.gif) |
-| **Custom order: diagonal wipe** | **Custom order: checkerboard** | **Wide box (width / height)** |
-| ![Custom diagonal wipe order](docs/assets/diagonal-wipe.gif) | ![Custom checkerboard order](docs/assets/checkerboard.gif) | ![Wide box](docs/assets/wide-box.gif) |
 
-### Playground & barcodes
+### Barcode
 
-| Live prop playground | QR code ↔ barcode | 110 barcode formats |
+| Ripple from the middle | Sweep, bars grow up | Spiral dots + gradient |
 |:---:|:---:|:---:|
-| ![Playground switching animation presets](docs/assets/playground.gif) | ![Animated QR code and barcode](docs/assets/hero.gif) | ![Gallery of barcode formats](docs/assets/barcode-gallery.gif) |
+| ![Code 128 barcode with ripple animation](docs/assets/barcode-ripple.gif) | ![EAN-13 barcode with sweep animation](docs/assets/barcode-sweep.gif) | ![Data Matrix with spiral dots and gradient](docs/assets/barcode-spiral.gif) |
+| **Random + radial gradient** | **Fade + top label** | **Scale on dark background** |
+| ![PDF417 with random order and radial gradient](docs/assets/barcode-random.gif) | ![Code 39 barcode fading in with top label](docs/assets/barcode-fade.gif) | ![MaxiCode scaling in on dark background](docs/assets/barcode-scale.gif) |
 
 All previews are recorded from the [example app](#example-app).
 
