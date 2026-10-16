@@ -1,0 +1,79 @@
+{
+  "name": "react-native-animated-codes",
+  "version": "1.0.0",
+  "description": "Fully customizable animated QR codes and barcodes (100+ formats: EAN, UPC, Code 128, Code 39, ITF, Data Matrix, PDF417, Aztec, MaxiCode, postal...) for React Native (Android & iOS), built on react-native-svg and react-native-reanimated.",
+  "license": "MIT",
+  "main": "lib/commonjs/index.js",
+  "types": "lib/commonjs/index.d.ts",
+  "typings": "src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dhaval-devstree/react-native-animated-codes"
+  },
+  "react-native": "src/index.ts",
+  "source": "src/index.ts",
+  "files": [
+    "src/",
+    "lib/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "react-native",
+    "qrcode",
+    "qr-code",
+    "qr",
+    "animated-codes",
+    "animated-qrcode",
+    "animated-qr",
+    "qr-generator",
+    "svg",
+    "reanimated",
+    "logo",
+    "gradient",
+    "customizable",
+    "barcode",
+    "animated-barcode",
+    "barcode-generator",
+    "ean13",
+    "upc",
+    "code128",
+    "code39",
+    "datamatrix",
+    "pdf417",
+    "aztec",
+    "maxicode",
+    "gs1",
+    "bwip-js"
+  ],
+  "author": "Dhaval <dhaval.devstree@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/dhaval-devstree/react-native-animated-codes/issues"
+  },
+  "homepage": "https://github.com/dhaval-devstree/react-native-animated-codes",
+  "peerDependencies": {
+    "react": ">=18",
+    "react-native": ">=0.72",
+    "react-native-reanimated": ">=3.6.0",
+    "react-native-svg": ">=13"
+  },
+  "dependencies": {
+    "bwip-js": "^4.11.4",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.2.0",
+    "react": "19.2.3",
+    "react-native": "0.85.2",
+    "react-native-reanimated": "~4.6.0",
+    "react-native-svg": "^15.15.5",
+    "react-native-worklets": "~0.12.2",
+    "typescript": "^5.8.3"
+  }
+}
