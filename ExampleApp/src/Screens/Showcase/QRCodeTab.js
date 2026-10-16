@@ -16,7 +16,7 @@ import PlaybackControls from '../../Components/PlaybackControls';
 
 // Defined at module level so the reference stays stable between renders
 const diagonalOrder = ({ x, y }) => (x + y) / 2;
-const checkerOrder = ({ row, col }) => ((row + col) % 2 === 0 ? 0 : 1);
+const checkerOrder = ({ row, column }) => ((row + column) % 2 === 0 ? 0 : 1);
 
 // Custom worklet easing, runs on the UI thread
 const elasticEasing = (t) => {
@@ -28,7 +28,7 @@ const elasticEasing = (t) => {
 const SHOWCASE_ITEMS = [
   {
     title: 'Default ripple + logo fill',
-    subtitle: 'Original badge look: ripple modules, traced finders, liquid logo fill.',
+    subtitle: 'Original badge look: ripple dots, traced finders, liquid logo fill.',
     props: {
       value: 'USER:2f1c7a1e-0000-4000-8000-000000000000',
       logo: Images.logo,
@@ -39,17 +39,17 @@ const SHOWCASE_ITEMS = [
   },
   {
     title: 'Sweep top → bottom',
-    subtitle: "animation='sweep' direction='ttb' moduleTransition='grow'",
-    props: { value: 'https://reactnative.dev', animation: 'sweep', direction: 'ttb', moduleTransition: 'grow', color: Colors.BLUE },
+    subtitle: "animation='sweep' direction='topToBottom' dotTransition='grow'",
+    props: { value: 'https://reactnative.dev', animation: 'sweep', direction: 'topToBottom', dotTransition: 'grow', color: Colors.BLUE },
   },
   {
     title: 'Spiral dots with gradient',
-    subtitle: 'Dot modules, rounded finders, linear gradient fill.',
+    subtitle: 'Circle dots, rounded finders, linear gradient fill.',
     props: {
       value: 'https://github.com',
       animation: 'spiral',
-      moduleShape: 'dot',
-      moduleScale: 0.9,
+      dotShape: 'circle',
+      dotScale: 0.9,
       finderShape: 'rounded',
       gradient: { type: 'linear', colors: [Colors.PURPLE, Colors.SKY] },
     },
@@ -60,11 +60,11 @@ const SHOWCASE_ITEMS = [
     props: {
       value: 'random-order',
       animation: 'random',
-      moduleShape: 'rounded',
+      dotShape: 'rounded',
       finderShape: 'rounded',
       finderAnimation: 'pop',
       quietZone: 2,
-      cornerRadius: 20,
+      borderRadius: 20,
       gradient: { type: 'radial', colors: [Colors.ORANGE, Colors.PINK, Colors.PURPLE] },
     },
   },
@@ -88,7 +88,7 @@ const SHOWCASE_ITEMS = [
       color: Colors.WHITE,
       backgroundColor: Colors.BLACK_LIGHT,
       quietZone: 2,
-      cornerRadius: 16,
+      borderRadius: 16,
       logo: Images.logo,
       logoAnimation: 'scale',
       logoSize: 48,
@@ -97,22 +97,22 @@ const SHOWCASE_ITEMS = [
   },
   {
     title: 'Custom order: diagonal wipe',
-    subtitle: 'getModuleOrder + custom timeline + worklet moduleEasing.',
+    subtitle: 'getDotOrder + custom timeline + worklet dotEasing.',
     props: {
       value: 'custom-diagonal',
-      getModuleOrder: diagonalOrder,
-      moduleEasing: elasticEasing,
-      timeline: { moduleSpread: 0.6, moduleDuration: 0.25, moduleJitter: 0 },
+      getDotOrder: diagonalOrder,
+      dotEasing: elasticEasing,
+      timeline: { dotSpread: 0.6, dotDuration: 0.25, dotJitter: 0 },
       duration: 2000,
       color: Colors.PINK,
     },
   },
   {
     title: 'Custom order: checkerboard',
-    subtitle: 'Two waves of modules, finder color overrides, looping.',
+    subtitle: 'Two waves of dots, finder color overrides, looping.',
     props: {
       value: 'custom-checker',
-      getModuleOrder: checkerOrder,
+      getDotOrder: checkerOrder,
       finderColor: Colors.RED,
       finderInnerColor: Colors.BLUE,
       loop: true,
@@ -128,7 +128,7 @@ const SHOWCASE_ITEMS = [
       size: undefined,
       width: 300,
       height: 200,
-      qrContainerStyle: { borderRadius: 20, backgroundColor: Colors.WHITE, borderWidth: 1, borderColor: Colors.BACKGROUND_LIGHT },
+      containerStyle: { borderRadius: 20, backgroundColor: Colors.WHITE, borderWidth: 1, borderColor: Colors.BACKGROUND_LIGHT },
       label: 'Label inside wide container',
     },
   },
@@ -204,7 +204,7 @@ const ManualCard = () => {
     <Text style={styles.cardTitleTxt}>Manual playback</Text>
     <Text style={styles.cardSubtitleTxt}>autoPlay={'{false}'} with play / reset / complete through the ref.</Text>
     <View style={styles.qrView}>
-      <AnimatedQRCode ref={qrRef} value='manual-playback' size={220} autoPlay={false} animation='spiral' moduleShape='rounded' />
+      <AnimatedQRCode ref={qrRef} value='manual-playback' size={220} autoPlay={false} animation='spiral' dotShape='rounded' />
     </View>
     <PlaybackControls targetRef={qrRef} />
     </View>

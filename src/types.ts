@@ -2,12 +2,12 @@ import type { ReactNode } from 'react';
 import type { ImageSourcePropType, ImageStyle, StyleProp, TextStyle, ViewStyle } from 'react-native';
 import type { EasingFunction, SharedValue } from 'react-native-reanimated';
 
-export type ErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
-export type ModuleShape = 'square' | 'rounded' | 'dot';
+export type ErrorCorrectionLevel = 'low' | 'medium' | 'quartile' | 'high';
+export type DotShape = 'square' | 'rounded' | 'circle';
 export type FinderShape = 'square' | 'rounded';
 export type AnimationType = 'ripple' | 'sweep' | 'spiral' | 'random' | 'fade' | 'scale' | 'none';
-export type SweepDirection = 'ltr' | 'rtl' | 'ttb' | 'btt';
-export type ModuleTransition = 'pop' | 'grow';
+export type SweepDirection = 'leftToRight' | 'rightToLeft' | 'topToBottom' | 'bottomToTop';
+export type DotTransition = 'pop' | 'grow';
 export type FinderAnimation = 'trace' | 'pop' | 'none';
 export type LogoAnimation = 'fill' | 'fade' | 'scale' | 'none';
 export type LabelPosition = 'top' | 'bottom';
@@ -20,10 +20,10 @@ export type Gradient =
 
 // Every value is a fraction of the main progress (0 → 1)
 export type Timeline = {
-  moduleStart: number;
-  moduleSpread: number;
-  moduleJitter: number;
-  moduleDuration: number;
+  dotStart: number;
+  dotSpread: number;
+  dotJitter: number;
+  dotDuration: number;
   finderStart: number;
   finderDuration: number;
   finderCenterStart: number;
@@ -35,29 +35,29 @@ export type Timeline = {
   labelDuration: number;
 };
 
-// x / y are the module center normalized to 0..1 over the code area
-export type ModuleContext = { row: number; col: number; count: number; x: number; y: number };
-export type ModuleOrder = (ctx: ModuleContext) => number;
+// x / y are the dot center normalized to 0..1 over the code area
+export type DotContext = { row: number; column: number; count: number; x: number; y: number };
+export type DotOrder = (ctx: DotContext) => number;
 
-export type Finder = { row: number; col: number };
+export type Finder = { row: number; column: number };
 
 export type QRData = {
   count: number;
   cellSize: number;
   offset: number;
   // Flat [cx, cy, start, cx, cy, start, ...] keeps the worklet loop cheap
-  dataModules: number[];
+  dots: number[];
   finalPath: string;
   finders: Finder[];
 };
 
 export type BuildOptions = {
   size: number;
-  ecl: ErrorCorrectionLevel;
+  errorCorrection: ErrorCorrectionLevel;
   quietZone: number;
-  shape: ModuleShape;
-  moduleScale: number;
-  order: ModuleOrder;
+  shape: DotShape;
+  dotScale: number;
+  order: DotOrder;
   timeline: Timeline;
 };
 
@@ -69,7 +69,7 @@ export type AnimatedQRCodeRef = {
 
 export type AnimatedQRCodeProps = {
   value: string;
-  ecl?: ErrorCorrectionLevel;
+  errorCorrection?: ErrorCorrectionLevel;
 
   size?: number;
   width?: number;
@@ -77,26 +77,27 @@ export type AnimatedQRCodeProps = {
   quietZone?: number;
 
   style?: StyleProp<ViewStyle>;
-  qrContainerStyle?: StyleProp<ViewStyle>;
-  cornerRadius?: number;
+  containerStyle?: StyleProp<ViewStyle>;
+  borderRadius?: number;
 
   color?: string;
   backgroundColor?: string;
   gradient?: Gradient;
   finderColor?: string;
   finderInnerColor?: string;
+  finderBackgroundColor?: string;
 
-  moduleShape?: ModuleShape;
-  moduleScale?: number;
+  dotShape?: DotShape;
+  dotScale?: number;
   finderShape?: FinderShape;
 
   logo?: ImageSourcePropType;
   renderLogo?: (size: number) => ReactNode;
   logoSize?: number;
-  logoMargin?: number;
+  logoPadding?: number;
   logoBorderRadius?: number;
   logoBackgroundColor?: string;
-  logoGhostOpacity?: number;
+  logoPlaceholderOpacity?: number;
   logoStyle?: StyleProp<ImageStyle>;
   logoContainerStyle?: StyleProp<ViewStyle>;
   logoAnimation?: LogoAnimation;
@@ -106,14 +107,14 @@ export type AnimatedQRCodeProps = {
   labelContainerStyle?: StyleProp<ViewStyle>;
   labelPosition?: LabelPosition;
   labelGap?: number;
-  labelAnimated?: boolean;
+  animateLabel?: boolean;
 
   animation?: AnimationType;
   direction?: SweepDirection;
-  moduleTransition?: ModuleTransition;
-  moduleEasing?: (t: number) => number;
+  dotTransition?: DotTransition;
+  dotEasing?: (t: number) => number;
   finderAnimation?: FinderAnimation;
-  getModuleOrder?: ModuleOrder;
+  getDotOrder?: DotOrder;
   timeline?: Partial<Timeline>;
   duration?: number;
   delay?: number;
@@ -245,7 +246,7 @@ export type BarcodeFormat =
   | 'hibccodablockf'
   | "hibcazteccode";
 
-// linear: 1D bars (also postal 4-state), matrix: 2D module grid (also stacked codes), maxicode: hexagon grid
+// linear: 1D bars (also postal 4-state), matrix: 2D dot grid (also stacked codes), maxicode: hexagon grid
 export type BarcodeKind = 'linear' | 'matrix' | 'maxicode';
 
 export type BarcodeFormatInfo = {
@@ -253,15 +254,15 @@ export type BarcodeFormatInfo = {
   name: string;
   kind: BarcodeKind;
   sample: string;
-  options?: BarcodeOptions;
+  encoderOptions?: BarcodeEncoderOptions;
 };
 
 // Passed straight to the bwip-js / BWIPP encoder (includecheck, parse, eclevel, columns, version...)
-export type BarcodeOptions = Record<string, string | number | boolean>;
+export type BarcodeEncoderOptions = Record<string, string | number | boolean>;
 
 // Elements are flat number arrays so the worklet loop stays cheap:
 // bars  [x, y, w, h, start, ...]
-// cells [cx, cy, start, ...] (matrix modules and maxicode hexagons)
+// cells [cx, cy, start, ...] (matrix dots and maxicode hexagons)
 export type BarcodeData = {
   kind: BarcodeKind;
   width: number;
@@ -279,14 +280,14 @@ export type BarcodeData = {
 
 export type BarcodeBuildOptions = {
   format: BarcodeFormat;
-  options?: BarcodeOptions;
+  encoderOptions?: BarcodeEncoderOptions;
   width: number;
   height: number;
   quietZone: number;
-  shape: ModuleShape;
-  moduleScale: number;
+  shape: DotShape;
+  dotScale: number;
   barRadius: number;
-  order: ModuleOrder;
+  order: DotOrder;
   timeline: Timeline;
 };
 
@@ -295,7 +296,7 @@ export type AnimatedBarcodeRef = AnimatedQRCodeRef;
 export type AnimatedBarcodeProps = {
   value: string;
   format?: BarcodeFormat;
-  options?: BarcodeOptions;
+  encoderOptions?: BarcodeEncoderOptions;
 
   size?: number;
   width?: number;
@@ -304,30 +305,30 @@ export type AnimatedBarcodeProps = {
 
   style?: StyleProp<ViewStyle>;
   containerStyle?: StyleProp<ViewStyle>;
-  cornerRadius?: number;
+  borderRadius?: number;
 
   color?: string;
   backgroundColor?: string;
   gradient?: Gradient;
   bullseyeColor?: string;
 
-  moduleShape?: ModuleShape;
-  moduleScale?: number;
+  dotShape?: DotShape;
+  dotScale?: number;
   barRadius?: number;
 
-  displayValue?: boolean;
+  showValue?: boolean;
   label?: ReactNode;
   labelStyle?: StyleProp<TextStyle>;
   labelContainerStyle?: StyleProp<ViewStyle>;
   labelPosition?: LabelPosition;
   labelGap?: number;
-  labelAnimated?: boolean;
+  animateLabel?: boolean;
 
   animation?: AnimationType;
   direction?: SweepDirection;
-  moduleTransition?: ModuleTransition;
-  moduleEasing?: (t: number) => number;
-  getModuleOrder?: ModuleOrder;
+  dotTransition?: DotTransition;
+  dotEasing?: (t: number) => number;
+  getDotOrder?: DotOrder;
   timeline?: Partial<Timeline>;
   duration?: number;
   delay?: number;

@@ -1,6 +1,6 @@
 {
   "name": "react-native-animated-codes",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Fully customizable animated QR codes and barcodes (100+ formats: EAN, UPC, Code 128, Code 39, ITF, Data Matrix, PDF417, Aztec, MaxiCode, postal...) for React Native (Android & iOS), built on react-native-svg and react-native-reanimated.",
   "license": "MIT",
   "main": "lib/commonjs/index.js",

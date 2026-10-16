@@ -91,11 +91,11 @@ const Initial = () => {
                 value='https://www.npmjs.com/package/react-native-animated-codes'
                 size={220}
                 quietZone={2}
-                cornerRadius={24}
+                borderRadius={24}
                 logo={Images.logo}
                 logoSize={48}
                 logoBorderRadius={24}
-                logoMargin={3}
+                logoPadding={3}
                 label='Scan me'
                 labelStyle={styles.heroLabelTxt} />
             ) : (

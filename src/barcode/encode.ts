@@ -1,5 +1,5 @@
 import bwipjs from 'bwip-js/generic';
-import type { BarcodeFormat, BarcodeOptions } from '../types';
+import type { BarcodeFormat, BarcodeEncoderOptions } from '../types';
 
 type RawSymbol = {
   sbs?: number[];
@@ -17,14 +17,14 @@ const rawEncode = bwipjs.raw as unknown as (bcid: string, text: string, options:
 export type EncodedSymbol =
   // Bars left to right, top / height as fractions of the full bar height (postal codes use partial bars)
   | { kind: 'linear'; units: number; bars: { x: number; w: number; top: number; h: number }[] }
-  // Row-major dark modules
+  // Row-major dark dots
   | { kind: 'matrix'; cols: number; rows: number; dark: Uint8Array }
   // Dark hexagon indices on the fixed 30 × 33 MaxiCode grid
   | { kind: 'maxicode'; hexes: number[] };
 
 type Point = [number, number];
 
-// Renders through a recording drawing at 1 unit per module and fills the traced outlines back into a bitmap
+// Renders through a recording drawing at 1 unit per dot and fills the traced outlines back into a bitmap
 const renderBitmap = (format: BarcodeFormat, value: string, opts: Record<string, unknown>) => {
   let width = 0;
   let height = 0;
@@ -97,7 +97,7 @@ const sameRow = (drawn: Uint8Array, start: number, width: number, pixs: number[]
 // Options that only affect bwip-js own text / border drawing, never the symbol geometry
 const DRAWING_ONLY = ['includetext', 'showborder', 'guardwhitespace', 'height', 'width', 'alttext'];
 
-export const encodeBarcode = (format: BarcodeFormat, value: string, options?: BarcodeOptions): EncodedSymbol => {
+export const encodeBarcode = (format: BarcodeFormat, value: string, options?: BarcodeEncoderOptions): EncodedSymbol => {
   const opts: Record<string, unknown> = { ...options };
   for (const key of DRAWING_ONLY) delete opts[key];
 
@@ -114,7 +114,7 @@ export const encodeBarcode = (format: BarcodeFormat, value: string, options?: Ba
 
   if (symbol.sbs) {
     const { sbs, bhs = [], bbs = [] } = symbol;
-    // Regular codes use integer module widths, postal codes use fractional ones: normalize to the narrowest element
+    // Regular codes use integer bar widths, postal codes use fractional ones: normalize to the narrowest element
     const unit = Math.min(...sbs.filter((w) => w > 0));
     const maxTop = Math.max(...bhs.map((h, i) => h + (bbs[i] ?? 0)), 0) || 1;
     const bars = [];

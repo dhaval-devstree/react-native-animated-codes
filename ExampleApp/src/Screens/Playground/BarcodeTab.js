@@ -21,9 +21,9 @@ const KIND_OPTIONS = [
 ];
 
 const ANIMATIONS = ['sweep', 'ripple', 'spiral', 'random', 'fade', 'scale', 'none'];
-const DIRECTIONS = ['ltr', 'rtl', 'ttb', 'btt'];
-const MODULE_TRANSITIONS = ['grow', 'pop'];
-const MODULE_SHAPES = ['square', 'rounded', 'dot'];
+const DIRECTIONS = ['leftToRight', 'rightToLeft', 'topToBottom', 'bottomToTop'];
+const DOT_TRANSITIONS = ['grow', 'pop'];
+const DOT_SHAPES = ['square', 'rounded', 'circle'];
 const BAR_RADII = [0, 1, 2];
 const DURATIONS = [600, 1200, 2400];
 
@@ -59,14 +59,14 @@ const BarcodePlayground = () => {
   const [format, setFormat] = useState('code128');
   const [value, setValue] = useState('Hello 123');
   const [animation, setAnimation] = useState('sweep');
-  const [direction, setDirection] = useState('ltr');
-  const [moduleTransition, setModuleTransition] = useState('grow');
-  const [moduleShape, setModuleShape] = useState('square');
+  const [direction, setDirection] = useState('leftToRight');
+  const [dotTransition, setDotTransition] = useState('grow');
+  const [dotShape, setDotShape] = useState('square');
   const [barRadius, setBarRadius] = useState(0);
   const [color, setColor] = useState(Colors.BLACK);
   const [gradientType, setGradientType] = useState('none');
   const [duration, setDuration] = useState(1200);
-  const [displayValue, setDisplayValue] = useState(true);
+  const [showValue, setShowValue] = useState(true);
   const [loop, setLoop] = useState(false);
   const [error, setError] = useState(null);
 
@@ -91,8 +91,8 @@ const BarcodePlayground = () => {
     setFormat(nextFormat);
     setValue(info.sample);
     setError(null);
-    setModuleTransition(info.kind === 'linear' ? 'grow' : 'pop');
-    setDisplayValue(info.kind === 'linear');
+    setDotTransition(info.kind === 'linear' ? 'grow' : 'pop');
+    setShowValue(info.kind === 'linear');
   };
 
   const handleSelectKind = (nextKind) => {
@@ -122,18 +122,18 @@ const BarcodePlayground = () => {
             ref={barcodeRef}
             value={value}
             format={format}
-            options={formatInfo?.options}
+            encoderOptions={formatInfo?.encoderOptions}
             width={kind === 'linear' ? 280 : 220}
             height={kind === 'linear' ? 120 : 220}
-            cornerRadius={12}
+            borderRadius={12}
             color={color}
             gradient={gradientType === 'none' ? undefined : GRADIENTS[gradientType]}
-            moduleShape={moduleShape}
+            dotShape={dotShape}
             barRadius={barRadius}
             animation={animation}
             direction={direction}
-            moduleTransition={moduleTransition}
-            displayValue={displayValue}
+            dotTransition={dotTransition}
+            showValue={showValue}
             labelStyle={styles.valueTxt}
             duration={duration}
             delay={250}
@@ -164,14 +164,14 @@ const BarcodePlayground = () => {
               placeholderTextColor={Colors.TEXT_MUTED}
               style={styles.input} />
           </View>
-          <OptionChips title='Display value' options={BOOLEAN_OPTIONS} value={displayValue} onChange={setDisplayValue} />
+          <OptionChips title='Show value' options={BOOLEAN_OPTIONS} value={showValue} onChange={setShowValue} />
         </Section>
         <Section title='Animation'>
           <OptionChips title='Preset' options={ANIMATIONS} value={animation} onChange={setAnimation} />
           {animation === 'sweep' &&
             <OptionChips title='Sweep direction' options={DIRECTIONS} value={direction} onChange={setDirection} />
           }
-          <OptionChips title='Transition' options={MODULE_TRANSITIONS} value={moduleTransition} onChange={setModuleTransition} />
+          <OptionChips title='Transition' options={DOT_TRANSITIONS} value={dotTransition} onChange={setDotTransition} />
           <OptionChips title='Duration (ms)' options={DURATIONS} value={duration} onChange={setDuration} />
           <OptionChips title='Loop' options={BOOLEAN_OPTIONS} value={loop} onChange={setLoop} />
         </Section>
@@ -180,7 +180,7 @@ const BarcodePlayground = () => {
           <OptionChips title='Gradient' options={GRADIENT_OPTIONS} value={gradientType} onChange={setGradientType} />
           {kind === 'linear'
             ? <OptionChips title='Bar radius' options={BAR_RADII} value={barRadius} onChange={setBarRadius} />
-            : <OptionChips title='Module shape' options={MODULE_SHAPES} value={moduleShape} onChange={setModuleShape} />
+            : <OptionChips title='Dot shape' options={DOT_SHAPES} value={dotShape} onChange={setDotShape} />
           }
         </Section>
       </>

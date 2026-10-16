@@ -1,4 +1,4 @@
-import type { ModuleShape } from './types';
+import type { DotShape } from './types';
 
 export const squarePath = (cx: number, cy: number, half: number) => {
   'worklet';
@@ -12,10 +12,10 @@ export const roundedRectPath = (x: number, y: number, w: number, h: number, r: n
   return `M${x + rr} ${y}h${w - 2 * rr}a${rr} ${rr} 0 0 1 ${rr} ${rr}v${h - 2 * rr}a${rr} ${rr} 0 0 1 ${-rr} ${rr}h${-(w - 2 * rr)}a${rr} ${rr} 0 0 1 ${-rr} ${-rr}v${-(h - 2 * rr)}a${rr} ${rr} 0 0 1 ${rr} ${-rr}Z`;
 };
 
-export const modulePath = (cx: number, cy: number, half: number, shape: ModuleShape) => {
+export const dotPath = (cx: number, cy: number, half: number, shape: DotShape) => {
   'worklet';
   if (half <= 0) return '';
-  if (shape === 'dot') {
+  if (shape === 'circle') {
     return `M${cx - half} ${cy}a${half} ${half} 0 1 0 ${half * 2} 0a${half} ${half} 0 1 0 ${-half * 2} 0Z`;
   }
   if (shape === 'rounded') return roundedRectPath(cx - half, cy - half, half * 2, half * 2, half * 0.5);

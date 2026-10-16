@@ -8,11 +8,11 @@ type Props = {
   logo?: ImageSourcePropType;
   renderLogo?: (size: number) => ReactNode;
   logoSize: number;
-  logoMargin: number;
+  logoPadding: number;
   logoBorderRadius: number;
   logoBackgroundColor: string;
   backgroundColor: string;
-  ghostOpacity: number;
+  placeholderOpacity: number;
   animation: LogoAnimation;
   logoStyle?: StyleProp<ImageStyle>;
   logoContainerStyle?: StyleProp<ViewStyle>;
@@ -27,11 +27,11 @@ type ContentStyle = { opacity?: number; position?: 'absolute'; left?: number; to
 const FILL_CONTENT: ContentStyle = { position: 'absolute', left: 0, top: 0 };
 
 export const QRLogo = ({
-  logo, renderLogo, logoSize, logoMargin, logoBorderRadius, logoBackgroundColor,
-  backgroundColor, ghostOpacity, animation, logoStyle, logoContainerStyle, timeline, progress,
+  logo, renderLogo, logoSize, logoPadding, logoBorderRadius, logoBackgroundColor,
+  backgroundColor, placeholderOpacity, animation, logoStyle, logoContainerStyle, timeline, progress,
 }: Props) => {
-  const backgroundSize = logoSize + logoMargin * 2;
-  const backgroundRadius = logoBorderRadius + (logoMargin / logoSize) * logoBorderRadius;
+  const backgroundSize = logoSize + logoPadding * 2;
+  const backgroundRadius = logoBorderRadius + (logoPadding / logoSize) * logoBorderRadius;
   const { logoStart, logoDuration } = timeline;
 
   // Logo fills top → bottom, like liquid pouring in, while the code ripples out around it
@@ -58,7 +58,7 @@ export const QRLogo = ({
     <View style={[StyleSheet.absoluteFill, styles.wrapper]} pointerEvents="none">
       <Animated.View
         style={[
-          { width: backgroundSize, height: backgroundSize, borderRadius: backgroundRadius, padding: logoMargin, backgroundColor },
+          { width: backgroundSize, height: backgroundSize, borderRadius: backgroundRadius, padding: logoPadding, backgroundColor },
           logoContainerStyle,
           wrapStyle,
         ]}
@@ -66,7 +66,7 @@ export const QRLogo = ({
         <View style={[styles.clip, { borderRadius: logoBorderRadius }]}>
           {animation === 'fill' ? (
             <>
-              {renderContent({ opacity: ghostOpacity })}
+              {renderContent({ opacity: placeholderOpacity })}
               <Animated.View style={[styles.fill, { backgroundColor: logoBackgroundColor }, fillStyle]}>
                 {renderContent(FILL_CONTENT)}
               </Animated.View>

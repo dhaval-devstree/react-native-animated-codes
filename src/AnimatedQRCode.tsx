@@ -8,27 +8,27 @@ import { FinderPattern } from './FinderPattern';
 import { GradientDefs } from './GradientDefs';
 import { resolveLayout } from './layout';
 import { isLogoTooLarge } from './logoCapacity';
-import { resolveModuleOrder } from './order';
+import { resolveDotOrder } from './order';
 import { QRLabel } from './QRLabel';
 import { QRLogo } from './QRLogo';
-import { QRModules } from './QRModules';
-import { LOGO_GHOST_OPACITY, resolveTimeline } from './timeline';
+import { QRDots } from './QRDots';
+import { LOGO_PLACEHOLDER_OPACITY, resolveTimeline } from './timeline';
 import { useQRProgress } from './useQRProgress';
 import type { AnimatedQRCodeProps, AnimatedQRCodeRef, QRData } from './types';
 
 export const AnimatedQRCode = forwardRef<AnimatedQRCodeRef, AnimatedQRCodeProps>((props, ref) => {
   const {
-    value, ecl = 'M',
+    value, errorCorrection = 'medium',
     size, width, height, quietZone = 0,
-    style, qrContainerStyle, cornerRadius = 0,
-    color = '#000000', backgroundColor = '#FFFFFF', gradient, finderColor, finderInnerColor,
-    moduleShape = 'square', moduleScale = 1, finderShape = 'square',
-    logo, renderLogo, logoSize: logoSizeProp, logoMargin = 2, logoBorderRadius = 0,
-    logoBackgroundColor = 'transparent', logoGhostOpacity = LOGO_GHOST_OPACITY,
+    style, containerStyle, borderRadius = 0,
+    color = '#000000', backgroundColor = '#FFFFFF', gradient, finderColor, finderInnerColor, finderBackgroundColor,
+    dotShape = 'square', dotScale = 1, finderShape = 'square',
+    logo, renderLogo, logoSize: logoSizeProp, logoPadding = 2, logoBorderRadius = 0,
+    logoBackgroundColor = 'transparent', logoPlaceholderOpacity = LOGO_PLACEHOLDER_OPACITY,
     logoStyle, logoContainerStyle, logoAnimation = 'fill',
-    label, labelStyle, labelContainerStyle, labelPosition = 'bottom', labelGap = 12, labelAnimated = true,
-    animation = 'ripple', direction = 'ltr', moduleTransition = 'pop', moduleEasing,
-    finderAnimation = 'trace', getModuleOrder, timeline: timelineProp,
+    label, labelStyle, labelContainerStyle, labelPosition = 'bottom', labelGap = 12, animateLabel = true,
+    animation = 'ripple', direction = 'leftToRight', dotTransition = 'pop', dotEasing,
+    finderAnimation = 'trace', getDotOrder, timeline: timelineProp,
     duration = 1200, delay = 350, easing = Easing.linear,
     loop = false, loopDelay = 1000, autoPlay = true, respectReduceMotion = true,
     progress: externalProgress,
@@ -45,15 +45,15 @@ export const AnimatedQRCode = forwardRef<AnimatedQRCodeRef, AnimatedQRCodeProps>
   const timelineKey = JSON.stringify(timelineProp ?? {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const timeline = useMemo(() => resolveTimeline(timelineProp), [timelineKey]);
-  const order = useMemo(() => resolveModuleOrder(animation, direction, getModuleOrder), [animation, direction, getModuleOrder]);
+  const order = useMemo(() => resolveDotOrder(animation, direction, getDotOrder), [animation, direction, getDotOrder]);
 
   const { data, error } = useMemo<{ data: QRData | null; error: Error | null }>(() => {
     try {
-      return { data: buildQRData(value, { size: qrSize, ecl, quietZone, shape: moduleShape, moduleScale, order, timeline }), error: null };
+      return { data: buildQRData(value, { size: qrSize, errorCorrection, quietZone, shape: dotShape, dotScale, order, timeline }), error: null };
     } catch (e) {
       return { data: null, error: e instanceof Error ? e : new Error(String(e)) };
     }
-  }, [value, qrSize, ecl, quietZone, moduleShape, moduleScale, order, timeline]);
+  }, [value, qrSize, errorCorrection, quietZone, dotShape, dotScale, order, timeline]);
 
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
@@ -61,19 +61,19 @@ export const AnimatedQRCode = forwardRef<AnimatedQRCodeRef, AnimatedQRCodeProps>
     if (error) onErrorRef.current?.(error);
   }, [error]);
 
-  const logoBackgroundSize = logoSize + logoMargin * 2;
+  const logoBackgroundSize = logoSize + logoPadding * 2;
   useEffect(() => {
-    if (__DEV__ && hasLogo && isLogoTooLarge(logoBackgroundSize, qrSize, ecl)) {
-      console.warn(`AnimatedQRCode: logo covers too much of the code for ecl="${ecl}", use a smaller logo or higher ecl`);
+    if (__DEV__ && hasLogo && isLogoTooLarge(logoBackgroundSize, qrSize, errorCorrection)) {
+      console.warn(`AnimatedQRCode: logo covers too much of the code for errorCorrection="${errorCorrection}", use a smaller logo or higher errorCorrection`);
     }
-  }, [hasLogo, logoBackgroundSize, qrSize, ecl]);
+  }, [hasLogo, logoBackgroundSize, qrSize, errorCorrection]);
 
   const { progress, play, reset, complete } = useQRProgress({
     animation, duration, delay, easing, loop, loopDelay, autoPlay, respectReduceMotion,
     external: externalProgress,
     disabled: error != null,
     // Only data / timing props restart, visual props never do
-    resetKey: [value, qrSize, ecl, quietZone, animation, direction, duration, delay, loop, loopDelay, timelineKey].join('|'),
+    resetKey: [value, qrSize, errorCorrection, quietZone, animation, direction, duration, delay, loop, loopDelay, timelineKey].join('|'),
     onStart: onAnimationStart,
     onComplete: onAnimationComplete,
   });
@@ -99,7 +99,7 @@ export const AnimatedQRCode = forwardRef<AnimatedQRCodeRef, AnimatedQRCodeProps>
       label={label}
       labelStyle={labelStyle}
       containerStyle={[labelPosition === 'top' ? { marginBottom: labelGap } : { marginTop: labelGap }, labelContainerStyle]}
-      animated={labelAnimated}
+      animated={animateLabel}
       timeline={timeline}
       progress={progress}
     />
@@ -114,19 +114,19 @@ export const AnimatedQRCode = forwardRef<AnimatedQRCodeRef, AnimatedQRCodeProps>
       accessibilityLabel={accessibilityLabel ?? (typeof label === 'string' ? label : 'QR code')}
     >
       {labelPosition === 'top' && labelNode}
-      <View testID={testID ? `${testID}-box` : undefined} style={[styles.box, { width: boxWidth, height: boxHeight }, qrContainerStyle]}>
+      <View testID={testID ? `${testID}-box` : undefined} style={[styles.box, { width: boxWidth, height: boxHeight }, containerStyle]}>
         <Animated.View style={[{ width: qrSize, height: qrSize }, groupStyle]}>
           <Svg width={qrSize} height={qrSize} viewBox={`0 0 ${qrSize} ${qrSize}`}>
             {hasGradient && <GradientDefs id={gradientId} gradient={gradient} width={qrSize} height={qrSize} />}
-            <Rect width={qrSize} height={qrSize} rx={cornerRadius} ry={cornerRadius} fill={backgroundColor} />
+            <Rect width={qrSize} height={qrSize} rx={borderRadius} ry={borderRadius} fill={backgroundColor} />
             {data && (
-              <QRModules
+              <QRDots
                 data={data}
-                shape={moduleShape}
-                moduleScale={moduleScale}
+                shape={dotShape}
+                dotScale={dotScale}
                 fill={fill}
-                transition={moduleTransition}
-                moduleEasing={moduleEasing}
+                transition={dotTransition}
+                dotEasing={dotEasing}
                 staticPath={isGroup}
                 timeline={timeline}
                 progress={progress}
@@ -136,12 +136,13 @@ export const AnimatedQRCode = forwardRef<AnimatedQRCodeRef, AnimatedQRCodeProps>
               <FinderPattern
                 key={`finder-${index}`}
                 row={finder.row}
-                col={finder.col}
+                column={finder.column}
                 index={index}
                 cellSize={data.cellSize}
                 offset={data.offset}
                 color={ringColor}
                 innerColor={centerColor}
+                backgroundColor={finderBackgroundColor}
                 shape={finderShape}
                 animation={isGroup ? 'none' : finderAnimation}
                 timeline={timeline}
@@ -154,11 +155,11 @@ export const AnimatedQRCode = forwardRef<AnimatedQRCodeRef, AnimatedQRCodeProps>
               logo={logo}
               renderLogo={renderLogo}
               logoSize={logoSize}
-              logoMargin={logoMargin}
+              logoPadding={logoPadding}
               logoBorderRadius={logoBorderRadius}
               logoBackgroundColor={logoBackgroundColor}
               backgroundColor={backgroundColor}
-              ghostOpacity={logoGhostOpacity}
+              placeholderOpacity={logoPlaceholderOpacity}
               animation={logoAnimation}
               logoStyle={logoStyle}
               logoContainerStyle={logoContainerStyle}
