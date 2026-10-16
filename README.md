@@ -9,8 +9,6 @@ A user-friendly yet highly customizable animated QR code and barcode generator f
 - Square, rounded or circle dots, square or rounded finder patterns, solid colors or linear / radial gradients
 - Optional logo (image or any custom element) and label above or below the code
 
-> Upgrading from an earlier version? Props were renamed, see [MIGRATION.md](MIGRATION.md).
-
 Behind the scenes:
 
 - Codes are drawn with [`react-native-svg`](https://github.com/software-mansion/react-native-svg).
