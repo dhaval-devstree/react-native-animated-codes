@@ -26,9 +26,9 @@ const HeroBarcode = forwardRef(({ width }, ref) => {
           quietZone={0}
           barRadius={1}
           color={Colors.INK}
-          displayValue={false}
+          showValue={false}
           animation='ripple'
-          moduleTransition='pop' />
+          dotTransition='pop' />
       </View>
       <Text style={[styles.heroLabelTxt, styles.barcodeScanTxt]}>Scan me</Text>
     </>

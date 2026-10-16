@@ -1,6 +1,6 @@
 import { roundedRectPath } from '../shapes';
 
-// Pointy-top hexagon, MaxiCode module
+// Pointy-top hexagon, MaxiCode dot
 export const hexPath = (cx: number, cy: number, halfW: number, halfH: number) => {
   'worklet';
   if (halfW <= 0 || halfH <= 0) return '';

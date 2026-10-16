@@ -3,7 +3,7 @@ export const clamp01 = (value: number) => {
   return Math.min(Math.max(value, 0), 1);
 };
 
-// Overshoots past 1 before settling, gives each module a "pop"
+// Overshoots past 1 before settling, gives each dot a "pop"
 export const easeOutBack = (t: number) => {
   'worklet';
   const c1 = 1.70158;

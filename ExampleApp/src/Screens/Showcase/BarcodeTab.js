@@ -46,7 +46,7 @@ const GalleryCard = memo(({ item }) => {
         ref={barcodeRef}
         value={item.sample}
         format={item.format}
-        options={item.options}
+        encoderOptions={item.encoderOptions}
         width={isLinear ? 280 : 180}
         height={isLinear ? 100 : 180}
         labelStyle={styles.valueTxt}

@@ -15,15 +15,15 @@ import PlaybackControls from '../../Components/PlaybackControls';
 import Section from '../../Components/Section';
 
 const ANIMATIONS = ['ripple', 'sweep', 'spiral', 'random', 'fade', 'scale', 'none'];
-const DIRECTIONS = ['ltr', 'rtl', 'ttb', 'btt'];
-const MODULE_TRANSITIONS = ['pop', 'grow'];
+const DIRECTIONS = ['leftToRight', 'rightToLeft', 'topToBottom', 'bottomToTop'];
+const DOT_TRANSITIONS = ['pop', 'grow'];
 const FINDER_ANIMATIONS = ['trace', 'pop', 'none'];
 const LOGO_ANIMATIONS = ['fill', 'fade', 'scale', 'none'];
-const MODULE_SHAPES = ['square', 'rounded', 'dot'];
+const DOT_SHAPES = ['square', 'rounded', 'circle'];
 const FINDER_SHAPES = ['square', 'rounded'];
-const ECL_LEVELS = ['L', 'M', 'Q', 'H'];
+const ERROR_CORRECTION_LEVELS = ['low', 'medium', 'quartile', 'high'];
 const SIZES = [160, 220, 280];
-const MODULE_SCALES = [1, 0.85, 0.7];
+const DOT_SCALES = [1, 0.85, 0.7];
 const DURATIONS = [600, 1200, 2400];
 const QUIET_ZONES = [0, 1, 2, 4];
 
@@ -76,17 +76,17 @@ const QRCodePlayground = () => {
 
   const [value, setValue] = useState('https://github.com');
   const [size, setSize] = useState(220);
-  const [ecl, setEcl] = useState('M');
+  const [errorCorrection, setErrorCorrection] = useState('medium');
   const [quietZone, setQuietZone] = useState(0);
   const [color, setColor] = useState(Colors.BLACK);
   const [backgroundColor, setBackgroundColor] = useState(Colors.WHITE);
   const [gradientType, setGradientType] = useState('none');
-  const [moduleShape, setModuleShape] = useState('square');
-  const [moduleScale, setModuleScale] = useState(1);
+  const [dotShape, setDotShape] = useState('square');
+  const [dotScale, setDotScale] = useState(1);
   const [finderShape, setFinderShape] = useState('square');
   const [animation, setAnimation] = useState('ripple');
-  const [direction, setDirection] = useState('ltr');
-  const [moduleTransition, setModuleTransition] = useState('pop');
+  const [direction, setDirection] = useState('leftToRight');
+  const [dotTransition, setDotTransition] = useState('pop');
   const [finderAnimation, setFinderAnimation] = useState('trace');
   const [logoType, setLogoType] = useState('image');
   const [logoAnimation, setLogoAnimation] = useState('fill');
@@ -139,23 +139,23 @@ const QRCodePlayground = () => {
             ref={qrRef}
             value={value}
             size={size}
-            ecl={ecl}
+            errorCorrection={errorCorrection}
             quietZone={quietZone}
-            cornerRadius={quietZone > 0 ? 16 : 0}
+            borderRadius={quietZone > 0 ? 16 : 0}
             color={color}
             backgroundColor={backgroundColor}
             gradient={gradientType === 'none' ? undefined : GRADIENTS[gradientType]}
-            moduleShape={moduleShape}
-            moduleScale={moduleScale}
+            dotShape={dotShape}
+            dotScale={dotScale}
             finderShape={finderShape}
             animation={animation}
             direction={direction}
-            moduleTransition={moduleTransition}
+            dotTransition={dotTransition}
             finderAnimation={finderAnimation}
             logo={logoType === 'image' ? Images.logo : undefined}
             renderLogo={logoType === 'custom' ? handleRenderCustomLogo : undefined}
             logoSize={size * 0.22}
-            logoMargin={3}
+            logoPadding={3}
             logoBorderRadius={size * 0.11}
             logoAnimation={logoAnimation}
             label={labelPosition === 'none' ? undefined : value}
@@ -188,7 +188,7 @@ const QRCodePlayground = () => {
               placeholderTextColor={Colors.TEXT_MUTED}
               style={styles.input} />
           </View>
-          <OptionChips title='Error correction' options={ECL_LEVELS} value={ecl} onChange={setEcl} />
+          <OptionChips title='Error correction' options={ERROR_CORRECTION_LEVELS} value={errorCorrection} onChange={setErrorCorrection} />
           <OptionChips title='Label' options={LABEL_OPTIONS} value={labelPosition} onChange={setLabelPosition} />
         </Section>
         <Section title='Animation'>
@@ -196,16 +196,16 @@ const QRCodePlayground = () => {
           {animation === 'sweep' &&
             <OptionChips title='Sweep direction' options={DIRECTIONS} value={direction} onChange={setDirection} />
           }
-          <OptionChips title='Module transition' options={MODULE_TRANSITIONS} value={moduleTransition} onChange={setModuleTransition} />
+          <OptionChips title='Dot transition' options={DOT_TRANSITIONS} value={dotTransition} onChange={setDotTransition} />
           <OptionChips title='Finder animation' options={FINDER_ANIMATIONS} value={finderAnimation} onChange={setFinderAnimation} />
           <OptionChips title='Duration (ms)' options={DURATIONS} value={duration} onChange={setDuration} />
           <OptionChips title='Loop' options={BOOLEAN_OPTIONS} value={loop} onChange={setLoop} />
         </Section>
         <Section title='Layout'>
           <OptionChips title='Size' options={SIZES} value={size} onChange={setSize} />
-          <OptionChips title='Quiet zone (modules)' options={QUIET_ZONES} value={quietZone} onChange={setQuietZone} />
-          <OptionChips title='Module shape' options={MODULE_SHAPES} value={moduleShape} onChange={setModuleShape} />
-          <OptionChips title='Module scale' options={MODULE_SCALES} value={moduleScale} onChange={setModuleScale} />
+          <OptionChips title='Quiet zone (dots)' options={QUIET_ZONES} value={quietZone} onChange={setQuietZone} />
+          <OptionChips title='Dot shape' options={DOT_SHAPES} value={dotShape} onChange={setDotShape} />
+          <OptionChips title='Dot scale' options={DOT_SCALES} value={dotScale} onChange={setDotScale} />
           <OptionChips title='Finder shape' options={FINDER_SHAPES} value={finderShape} onChange={setFinderShape} />
         </Section>
         <Section title='Color'>

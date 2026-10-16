@@ -8,7 +8,7 @@ import { BARCODE_FORMATS } from './barcode/formats';
 import { MaxiBullseye } from './barcode/MaxiBullseye';
 import { clamp01, easeInOutCubic, easeOutBack } from './easing';
 import { GradientDefs } from './GradientDefs';
-import { resolveModuleOrder } from './order';
+import { resolveDotOrder } from './order';
 import { QRLabel } from './QRLabel';
 import { resolveTimeline } from './timeline';
 import { useQRProgress } from './useQRProgress';
@@ -24,19 +24,19 @@ const DEFAULT_2D_SIZE = 200;
 const DEFAULT_QUIET_ZONE: Record<BarcodeKind, number> = { linear: 10, matrix: 2, maxicode: 1 };
 
 export const AnimatedBarcode = forwardRef<AnimatedBarcodeRef, AnimatedBarcodeProps>((props, ref) => {
-  const { value, format = 'code128', options } = props;
+  const { value, format = 'code128', encoderOptions } = props;
   const kind = getBarcodeKind(format);
   const isLinear = kind === 'linear';
 
   const {
     size, width: widthProp, height: heightProp, quietZone = DEFAULT_QUIET_ZONE[kind],
-    style, containerStyle, cornerRadius = 0,
+    style, containerStyle, borderRadius = 0,
     color = '#000000', backgroundColor = '#FFFFFF', gradient, bullseyeColor,
-    moduleShape = format.includes('dotcode') ? 'dot' : 'square', moduleScale = 1, barRadius = 0,
-    displayValue = isLinear, label: labelProp, labelStyle, labelContainerStyle,
-    labelPosition = 'bottom', labelGap = 8, labelAnimated = true,
-    animation = 'sweep', direction = 'ltr', moduleTransition = isLinear ? 'grow' : 'pop', moduleEasing,
-    getModuleOrder, timeline: timelineProp,
+    dotShape = format.includes('dotcode') ? 'circle' : 'square', dotScale = 1, barRadius = 0,
+    showValue = isLinear, label: labelProp, labelStyle, labelContainerStyle,
+    labelPosition = 'bottom', labelGap = 8, animateLabel = true,
+    animation = 'sweep', direction = 'leftToRight', dotTransition = isLinear ? 'grow' : 'pop', dotEasing,
+    getDotOrder, timeline: timelineProp,
     duration = 1200, delay = 350, easing = Easing.linear,
     loop = false, loopDelay = 1000, autoPlay = true, respectReduceMotion = true,
     progress: externalProgress,
@@ -49,24 +49,24 @@ export const AnimatedBarcode = forwardRef<AnimatedBarcodeRef, AnimatedBarcodePro
   const height = heightProp ?? (isLinear ? width * LINEAR_HEIGHT_RATIO : size ?? width);
   const isGroup = animation === 'fade' || animation === 'scale' || animation === 'none';
 
-  // Inline `timeline={{ ... }}` / `options={{ ... }}` objects are a new reference every render, key on content instead
+  // Inline `timeline={{ ... }}` / `encoderOptions={{ ... }}` objects are a new reference every render, key on content instead
   const timelineKey = JSON.stringify(timelineProp ?? {});
-  const optionsKey = JSON.stringify(options ?? {});
+  const encoderOptionsKey = JSON.stringify(encoderOptions ?? {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const timeline = useMemo(() => resolveTimeline(timelineProp), [timelineKey]);
-  const order = useMemo(() => resolveModuleOrder(animation, direction, getModuleOrder), [animation, direction, getModuleOrder]);
+  const order = useMemo(() => resolveDotOrder(animation, direction, getDotOrder), [animation, direction, getDotOrder]);
 
   const { data, error } = useMemo<{ data: BarcodeData | null; error: Error | null }>(() => {
     try {
       return {
-        data: buildBarcodeData(value, { format, options, width, height, quietZone, shape: moduleShape, moduleScale, barRadius, order, timeline }),
+        data: buildBarcodeData(value, { format, encoderOptions, width, height, quietZone, shape: dotShape, dotScale, barRadius, order, timeline }),
         error: null,
       };
     } catch (e) {
       return { data: null, error: e instanceof Error ? e : new Error(String(e)) };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, format, optionsKey, width, height, quietZone, moduleShape, moduleScale, barRadius, order, timeline]);
+  }, [value, format, encoderOptionsKey, width, height, quietZone, dotShape, dotScale, barRadius, order, timeline]);
 
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
@@ -79,7 +79,7 @@ export const AnimatedBarcode = forwardRef<AnimatedBarcodeRef, AnimatedBarcodePro
     external: externalProgress,
     disabled: error != null,
     // Only data / timing props restart, visual props never do
-    resetKey: [value, format, optionsKey, width, height, quietZone, animation, direction, duration, delay, loop, loopDelay, timelineKey].join('|'),
+    resetKey: [value, format, encoderOptionsKey, width, height, quietZone, animation, direction, duration, delay, loop, loopDelay, timelineKey].join('|'),
     onStart: onAnimationStart,
     onComplete: onAnimationComplete,
   });
@@ -98,13 +98,13 @@ export const AnimatedBarcode = forwardRef<AnimatedBarcodeRef, AnimatedBarcodePro
   const hasGradient = gradient != null && gradient.colors.length > 1;
   const fill = hasGradient ? `url(#${gradientId})` : gradient?.colors[0] ?? color;
 
-  const label = labelProp ?? (displayValue ? value : undefined);
+  const label = labelProp ?? (showValue ? value : undefined);
   const labelNode = label != null ? (
     <QRLabel
       label={label}
       labelStyle={[labelProp == null && styles.valueText, labelStyle]}
       containerStyle={[labelPosition === 'top' ? { marginBottom: labelGap } : { marginTop: labelGap }, labelContainerStyle]}
-      animated={labelAnimated}
+      animated={animateLabel}
       timeline={timeline}
       progress={progress}
     />
@@ -122,16 +122,16 @@ export const AnimatedBarcode = forwardRef<AnimatedBarcodeRef, AnimatedBarcodePro
       <Animated.View testID={testID ? `${testID}-box` : undefined} style={[{ width, height }, containerStyle, groupStyle]}>
         <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
           {hasGradient && <GradientDefs id={gradientId} gradient={gradient} width={width} height={height} />}
-          <Rect width={width} height={height} rx={cornerRadius} ry={cornerRadius} fill={backgroundColor} />
+          <Rect width={width} height={height} rx={borderRadius} ry={borderRadius} fill={backgroundColor} />
           {data && (
             <BarcodeElements
               data={data}
-              shape={moduleShape}
-              moduleScale={moduleScale}
+              shape={dotShape}
+              dotScale={dotScale}
               barRadius={barRadius}
               fill={fill}
-              transition={moduleTransition}
-              moduleEasing={moduleEasing}
+              transition={dotTransition}
+              dotEasing={dotEasing}
               staticPath={isGroup}
               timeline={timeline}
               progress={progress}

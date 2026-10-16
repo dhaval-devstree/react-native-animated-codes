@@ -9,27 +9,33 @@ const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 type Props = {
   row: number;
-  col: number;
+  column: number;
   index: number;
   cellSize: number;
   offset: number;
   color: string;
   innerColor: string;
+  // Fills the gap between ring and center, nothing drawn when unset
+  backgroundColor?: string;
   shape: FinderShape;
   animation: FinderAnimation;
   timeline: Timeline;
   progress: SharedValue<number>;
 };
 
-export const FinderPattern = ({ row, col, index, cellSize, offset, color, innerColor, shape, animation, timeline, progress }: Props) => {
-  const x = offset + col * cellSize + cellSize / 2;
+export const FinderPattern = ({ row, column, index, cellSize, offset, color, innerColor, backgroundColor, shape, animation, timeline, progress }: Props) => {
+  const x = offset + column * cellSize + cellSize / 2;
   const y = offset + row * cellSize + cellSize / 2;
   const side = cellSize * 6;
   const ringRadius = shape === 'rounded' ? cellSize * 1.5 : 0;
   const perimeter = 4 * (side - 2 * ringRadius) + 2 * Math.PI * ringRadius;
-  const centerX = offset + (col + 3.5) * cellSize;
+  const centerX = offset + (column + 3.5) * cellSize;
   const centerY = offset + (row + 3.5) * cellSize;
   const ringPath = roundedRectPath(x, y, side, side, ringRadius);
+  // Inside edge of the ring: 5×5 cells, corner follows the ring's inner curve
+  const backgroundSide = cellSize * 5;
+  const backgroundRadius = shape === 'rounded' ? cellSize : 0;
+  const backgroundPath = roundedRectPath(centerX - backgroundSide / 2, centerY - backgroundSide / 2, backgroundSide, backgroundSide, backgroundRadius);
   const { finderStart, finderDuration, finderCenterStart, finderCenterDuration, finderStagger } = timeline;
 
   // trace: ring drawn like a pen stroke; pop: ring scales out from its center
@@ -51,6 +57,17 @@ export const FinderPattern = ({ row, col, index, cellSize, offset, color, innerC
     };
   });
 
+  // Background follows the ring: fades in while tracing, scales with it on pop
+  const backgroundAnimatedProps = useAnimatedProps(() => {
+    const local = animation === 'none' ? 1 : clamp01((progress.value - finderStart - index * finderStagger) / finderDuration);
+    if (local === 0) return { d: 'M0 0', fillOpacity: 0 };
+    if (animation === 'pop') {
+      const s = backgroundSide * easeOutBack(local);
+      return { d: roundedRectPath(centerX - s / 2, centerY - s / 2, s, s, backgroundRadius * easeOutBack(local)), fillOpacity: 1 };
+    }
+    return { d: backgroundPath, fillOpacity: animation === 'trace' ? easeInOutCubic(local) : 1 };
+  });
+
   // Inner 3×3 square pops in once the ring is closed
   const centerAnimatedProps = useAnimatedProps(() => {
     const local = animation === 'none' ? 1 : clamp01((progress.value - finderCenterStart - index * finderStagger) / finderCenterDuration);
@@ -65,6 +82,7 @@ export const FinderPattern = ({ row, col, index, cellSize, offset, color, innerC
 
   return (
     <>
+      {backgroundColor != null && <AnimatedPath fill={backgroundColor} animatedProps={backgroundAnimatedProps} />}
       {/* Square caps cover the corner where the trace closes on itself */}
       <AnimatedPath
         fill="none"

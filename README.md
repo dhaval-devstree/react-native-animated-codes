@@ -4,10 +4,12 @@ A user-friendly yet highly customizable animated QR code and barcode generator f
 
 - `AnimatedQRCode`: QR code with finder pattern animations, optional logo and label
 - `AnimatedBarcode`: **110 formats** (every monochrome symbology [bwip-js](https://github.com/metafloor/bwip-js) encodes): EAN / UPC / ISBN, Code 128, GS1-128, Code 39 / 93, ITF / ITF-14, Codabar, MSI, GS1 DataBar, postal (USPS IMb, POSTNET, Royal Mail, Australia Post, KIX, Japan Post), Data Matrix, PDF417 / MicroPDF417, Aztec, QR / Micro QR, Han Xin, DotCode, MaxiCode, Code One, composites and more
-- Animation presets (`ripple`, `sweep`, `spiral`, `random`, `fade`, `scale`, `none`), custom module order, custom easing, per-phase timeline, or drive it yourself with a `progress` shared value
+- Animation presets (`ripple`, `sweep`, `spiral`, `random`, `fade`, `scale`, `none`), custom dot order, custom easing, per-phase timeline, or drive it yourself with a `progress` shared value
 - Imperative `play()` / `reset()` / `complete()`, `loop`, `autoPlay`, and respects the OS "reduce motion" setting
-- Square, rounded or dot modules, square or rounded finder patterns, solid colors or linear / radial gradients
+- Square, rounded or circle dots, square or rounded finder patterns, solid colors or linear / radial gradients
 - Optional logo (image or any custom element) and label above or below the code
+
+> Upgrading from an earlier version? Props were renamed, see [MIGRATION.md](MIGRATION.md).
 
 Behind the scenes:
 
@@ -120,7 +122,7 @@ Both components play their animation automatically when they mount.
 
 ### With size customization
 
-Only `value` is required. Set the size with `size` (a square), or with `width` / `height` (the QR stays square and is centered in the box). Use `quietZone` (in modules) to add a white margin around the code, which helps scanners:
+Only `value` is required. Set the size with `size` (a square), or with `width` / `height` (the QR stays square and is centered in the box). Use `quietZone` (in dots) to add a white margin around the code, which helps scanners:
 
 ```jsx
 <AnimatedQRCode value="hello" size={260} />
@@ -135,17 +137,18 @@ Only `value` is required. Set the size with `size` (a square), or with `width` /
   value="https://example.com"
   color="#1B1B3A"
   backgroundColor="#F5F5FF"
-  cornerRadius={16}
-  moduleShape="rounded"     // 'square' | 'rounded' | 'dot'
-  moduleScale={0.9}         // < 1 adds small gaps between modules
+  borderRadius={16}
+  dotShape="rounded"        // 'square' | 'rounded' | 'circle'
+  dotScale={0.9}            // < 1 adds small gaps between dots
   finderShape="rounded"     // 'square' | 'rounded'
   finderColor="#E63946"
   finderInnerColor="#1B1B3A"
-  qrContainerStyle={{ padding: 12, borderRadius: 20, backgroundColor: '#F5F5FF' }}
+  finderBackgroundColor="#FFE5E8" // fills the gap between ring and center
+  containerStyle={{ padding: 12, borderRadius: 20, backgroundColor: '#F5F5FF' }}
 />
 ```
 
-Gradients replace `color` for modules and finders:
+Gradients replace `color` for dots and finders:
 
 ```jsx
 <AnimatedQRCode
@@ -156,7 +159,7 @@ Gradients replace `color` for modules and finders:
 <AnimatedQRCode value="hello" gradient={{ type: 'radial', colors: ['#FF512F', '#DD2476'] }} />
 ```
 
-> **Keep contrast high.** Dark modules on a light background scan best. Very light colors or inverted codes may not scan on every device.
+> **Keep contrast high.** Dark dots on a light background scan best. Very light colors or inverted codes may not scan on every device.
 
 ### With logo
 
@@ -165,10 +168,10 @@ Pass any image source:
 ```jsx
 <AnimatedQRCode
   value="https://example.com"
-  ecl="H"                       // more error correction for the covered area
+  errorCorrection="high"        // more error correction for the covered area
   logo={require('./logo.png')}  // or { uri: 'https://...' }
   logoSize={56}
-  logoMargin={4}
+  logoPadding={4}
   logoBorderRadius={12}
   logoBackgroundColor="#FFFFFF"
   logoAnimation="fill"          // 'fill' | 'fade' | 'scale' | 'none'
@@ -185,7 +188,7 @@ Or render your own element (an SVG icon, a `View`, …):
 />
 ```
 
-The logo hides part of the code and error correction rebuilds the missing part. **For logos bigger than ~20% of the code, use `ecl="Q"` or `ecl="H"`.** In development a warning is logged if the logo is too big for the chosen `ecl`.
+The logo hides part of the code and error correction rebuilds the missing part. **For logos bigger than ~20% of the code, use `errorCorrection="quartile"` or `errorCorrection="high"`.** In development a warning is logged if the logo is too big for the chosen `errorCorrection`.
 
 ### With label
 
@@ -205,12 +208,12 @@ The logo hides part of the code and error correction rebuilds the missing part. 
 <AnimatedQRCode value="hello" label={<Text style={styles.custom}>Scan me 👋</Text>} />
 ```
 
-Set `labelAnimated={false}` to show the label without the fade / slide in.
+Set `animateLabel={false}` to show the label without the fade / slide in.
 
 ### With animation customization
 
 ```jsx
-<AnimatedQRCode value="hello" animation="sweep" direction="ttb" duration={1500} delay={200} />
+<AnimatedQRCode value="hello" animation="sweep" direction="topToBottom" duration={1500} delay={200} />
 
 // Looping loader
 <AnimatedQRCode value="hello" animation="random" loop loopDelay={1500} />
@@ -219,8 +222,8 @@ Set `labelAnimated={false}` to show the label without the fade / slide in.
 <AnimatedQRCode
   value="https://example.com"
   animation="spiral"
-  moduleShape="dot"
-  moduleScale={0.9}
+  dotShape="circle"
+  dotScale={0.9}
   finderShape="rounded"
   gradient={{ type: 'linear', colors: ['#6A11CB', '#2575FC'], start: { x: 0, y: 0 }, end: { x: 1, y: 1 } }}
 />
@@ -228,25 +231,25 @@ Set `labelAnimated={false}` to show the label without the fade / slide in.
 
 Fine tune:
 
-- `moduleTransition`: `'pop'` (small overshoot) or `'grow'` (no overshoot)
+- `dotTransition`: `'pop'` (small overshoot) or `'grow'` (no overshoot)
 - `finderAnimation`: `'trace'`, `'pop'` or `'none'`
 - `duration` / `delay` in ms
 - `loop` + `loopDelay` to repeat forever
 - `timeline` to change when each phase starts and how long it lasts ([details](#timeline))
 
-### With custom module order
+### With custom dot order
 
-`getModuleOrder` runs on the JS thread, once per module, while the code is built. Return a number from `0` (first) to `1` (last). Define it outside the component or wrap it in `useCallback`, so the code data is not rebuilt on every render.
+`getDotOrder` runs on the JS thread, once per dot, while the code is built. Return a number from `0` (first) to `1` (last). Define it outside the component or wrap it in `useCallback`, so the code data is not rebuilt on every render.
 
 ```jsx
 const diagonal = ({ x, y }) => (x + y) / 2;
 
-<AnimatedQRCode value="hello" getModuleOrder={diagonal} timeline={{ moduleSpread: 0.6, moduleJitter: 0 }} />
+<AnimatedQRCode value="hello" getDotOrder={diagonal} timeline={{ dotSpread: 0.6, dotJitter: 0 }} />
 ```
 
 ### With custom easing
 
-`easing` and `moduleEasing` run on the UI thread, so they must be worklets (`Easing.*` functions already are).
+`easing` and `dotEasing` run on the UI thread, so they must be worklets (`Easing.*` functions already are).
 
 ```jsx
 import { Easing } from 'react-native-reanimated';
@@ -257,7 +260,7 @@ const elastic = (t) => {
   return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * ((2 * Math.PI) / 3)) + 1;
 };
 
-<AnimatedQRCode value="hello" moduleEasing={elastic} easing={Easing.inOut(Easing.quad)} />
+<AnimatedQRCode value="hello" dotEasing={elastic} easing={Easing.inOut(Easing.quad)} />
 ```
 
 The package also exports ready-made worklets: `easeOutCubic`, `easeInOutCubic`, `easeOutBack`.
@@ -326,15 +329,15 @@ import { AnimatedBarcode } from 'react-native-animated-codes';
 
 <AnimatedBarcode value="590123412345" format="ean13" />
 <AnimatedBarcode value="Hello 123" format="code128" width={320} height={110} barRadius={1} />
-<AnimatedBarcode value="ABC-12345" format="code128" displayValue={false} width={280} height={90} />
-<AnimatedBarcode value="hello world" format="datamatrix" size={180} moduleShape="rounded" animation="ripple" />
-<AnimatedBarcode value="This is PDF417" format="pdf417" options={{ columns: 2 }} width={300} height={120} />
+<AnimatedBarcode value="ABC-12345" format="code128" showValue={false} width={280} height={90} />
+<AnimatedBarcode value="hello world" format="datamatrix" size={180} dotShape="rounded" animation="ripple" />
+<AnimatedBarcode value="This is PDF417" format="pdf417" encoderOptions={{ columns: 2 }} width={300} height={120} />
 ```
 
 - `format` picks the symbology (default `'code128'`). Every value is in the typed `BarcodeFormat` union, so your editor autocompletes it.
-- `options` passes encoder options (check digits, columns, error level, …).
-- Linear barcodes show the value as text below the bars. Hide it with `displayValue={false}`, or replace the text with `label`.
-- Not sure what a format expects? `BARCODE_FORMATS` has a valid `sample` value and required `options` for every format (see [Response](#response)).
+- `encoderOptions` passes encoder options (check digits, columns, error level, …).
+- Linear barcodes show the value as text below the bars. Hide it with `showValue={false}`, or replace the text with `label`.
+- Not sure what a format expects? `BARCODE_FORMATS` has a valid `sample` value and required `encoderOptions` for every format (see [Response](#response)).
 
 ## Customisation
 
@@ -345,25 +348,26 @@ import { AnimatedBarcode } from 'react-native-animated-codes';
 | Option | Type | Default | Description |
 |---|---|---|---|
 | value | `string` | (required) | Text to encode. |
-| ecl | `'L' \| 'M' \| 'Q' \| 'H'` | `'M'` | Error correction level. |
+| errorCorrection | `'low' \| 'medium' \| 'quartile' \| 'high'` | `'medium'` | Error correction level: how much of the code can be covered or damaged and still scan (about 7% / 15% / 25% / 30%). |
 | size | `number` | `min(width, height)` or `200` | QR square side. |
 | width / height | `number` | `size` | QR box, QR is centered inside. |
-| quietZone | `number` (modules) | `0` | Margin inside the QR square. |
+| quietZone | `number` (dots) | `0` | Margin inside the QR square. |
 
 #### Style & color
 
 | Option | Type | Default | Description |
 |---|---|---|---|
 | style | `ViewStyle` | (none) | Outer wrapper (QR + label). |
-| qrContainerStyle | `ViewStyle` | (none) | QR box (shadow, border, padding…). |
-| cornerRadius | `number` | `0` | Background corner radius. |
-| color | `string` | `'#000000'` | Module color. |
+| containerStyle | `ViewStyle` | (none) | QR box (shadow, border, padding…). |
+| borderRadius | `number` | `0` | Background corner radius. |
+| color | `string` | `'#000000'` | Dot color. |
 | backgroundColor | `string` | `'#FFFFFF'` | Background color. |
-| gradient | `Gradient` | (none) | Overrides `color` for modules and finders. |
-| finderColor | `string` | module fill | Finder outer ring. |
+| gradient | `Gradient` | (none) | Overrides `color` for dots and finders. |
+| finderColor | `string` | dot fill | Finder outer ring. |
 | finderInnerColor | `string` | `finderColor` | Finder 3×3 center. |
-| moduleShape | `'square' \| 'rounded' \| 'dot'` | `'square'` | Module shape. |
-| moduleScale | `number` (0–1] | `1` | Below 1 adds gaps between modules. |
+| finderBackgroundColor | `string` | (none) | Fills the gap between the finder ring and center. Not drawn when unset. |
+| dotShape | `'square' \| 'rounded' \| 'circle'` | `'square'` | Dot shape. |
+| dotScale | `number` (0–1] | `1` | Below 1 adds gaps between dots. |
 | finderShape | `'square' \| 'rounded'` | `'square'` | Finder pattern shape. |
 
 #### Logo
@@ -373,10 +377,10 @@ import { AnimatedBarcode } from 'react-native-animated-codes';
 | logo | `ImageSourcePropType` | (none) | Leave out for no logo. |
 | renderLogo | `(size: number) => ReactNode` | (none) | Custom logo element instead of an image. |
 | logoSize | `number` | `qrSize * 0.2` | Logo size. |
-| logoMargin | `number` | `2` | Space around the logo. |
+| logoPadding | `number` | `2` | Space around the logo. |
 | logoBorderRadius | `number` | `0` | Logo corner radius. |
 | logoBackgroundColor | `string` | `'transparent'` | Background behind the logo. |
-| logoGhostOpacity | `number` | `0.15` | Faded logo shown before the fill. |
+| logoPlaceholderOpacity | `number` | `0.15` | Faded logo shown before the fill. |
 | logoStyle | `ImageStyle` | (none) | Logo image style. |
 | logoContainerStyle | `ViewStyle` | (none) | Logo container style. |
 | logoAnimation | `'fill' \| 'fade' \| 'scale' \| 'none'` | `'fill'` | Logo animation. |
@@ -390,18 +394,18 @@ import { AnimatedBarcode } from 'react-native-animated-codes';
 | labelContainerStyle | `ViewStyle` | (none) | Label container style. |
 | labelPosition | `'top' \| 'bottom'` | `'bottom'` | Label position. |
 | labelGap | `number` | `12` | Space between code and label. |
-| labelAnimated | `boolean` | `true` | Fades and slides in. |
+| animateLabel | `boolean` | `true` | Fades and slides in. |
 
 #### Animation
 
 | Option | Type | Default | Description |
 |---|---|---|---|
 | animation | `'ripple' \| 'sweep' \| 'spiral' \| 'random' \| 'fade' \| 'scale' \| 'none'` | `'ripple'` | Preset (see table below). |
-| direction | `'ltr' \| 'rtl' \| 'ttb' \| 'btt'` | `'ltr'` | For `sweep`. |
-| moduleTransition | `'pop' \| 'grow'` | `'pop'` | `pop` overshoots, `grow` does not. |
-| moduleEasing | worklet `(t) => number` | (none) | Overrides `moduleTransition`. |
+| direction | `'leftToRight' \| 'rightToLeft' \| 'topToBottom' \| 'bottomToTop'` | `'leftToRight'` | For `sweep`. |
+| dotTransition | `'pop' \| 'grow'` | `'pop'` | `pop` overshoots, `grow` does not. |
+| dotEasing | worklet `(t) => number` | (none) | Overrides `dotTransition`. |
 | finderAnimation | `'trace' \| 'pop' \| 'none'` | `'trace'` | Finder pattern animation. |
-| getModuleOrder | `(ctx: ModuleContext) => number` | (none) | Custom order 0..1, overrides the preset. |
+| getDotOrder | `(ctx: DotContext) => number` | (none) | Custom order 0..1, overrides the preset. |
 | timeline | `Partial<Timeline>` | `DEFAULT_TIMELINE` | Per-phase timing. |
 | duration | `number` (ms) | `1200` | Animation duration. |
 | delay | `number` (ms) | `350` | Delay before the animation starts. |
@@ -425,10 +429,10 @@ import { AnimatedBarcode } from 'react-native-animated-codes';
 
 | Preset | Effect |
 |---|---|
-| `ripple` (QR default) | Modules appear from the center outward. |
-| `sweep` (barcode default) | Modules appear in a line, direction set by `direction`: `'ltr' \| 'rtl' \| 'ttb' \| 'btt'`. |
-| `spiral` | Modules appear in a spiral. |
-| `random` | Modules appear in random order. |
+| `ripple` (QR default) | Dots appear from the center outward. |
+| `sweep` (barcode default) | Dots appear in a line, direction set by `direction`: `'leftToRight' \| 'rightToLeft' \| 'topToBottom' \| 'bottomToTop'`. |
+| `spiral` | Dots appear in a spiral. |
+| `random` | Dots appear in random order. |
 | `fade` | Whole code fades in. |
 | `scale` | Whole code scales in. |
 | `none` | Code is shown immediately. |
@@ -447,10 +451,10 @@ All values are fractions of the overall progress (0 → 1). Pass only the fields
 
 | Key | Default | Description |
 |---|---|---|
-| moduleStart | `0.08` | When the first module starts. |
-| moduleSpread | `0.55` | How long modules keep starting. |
-| moduleJitter | `0.06` | Random offset per module. |
-| moduleDuration | `0.18` | How long each module animates. |
+| dotStart | `0.08` | When the first dot starts. |
+| dotSpread | `0.55` | How long dots keep starting. |
+| dotJitter | `0.06` | Random offset per dot. |
+| dotDuration | `0.18` | How long each dot animates. |
 | finderStart | `0.42` | Finder ring start. |
 | finderDuration | `0.3` | Finder ring duration. |
 | finderCenterStart | `0.7` | Finder center start. |
@@ -469,22 +473,22 @@ Animation, timing, events, ref (`play` / `reset` / `complete`), `gradient`, `lab
 |---|---|---|---|
 | value | `string` | (required) | Must be valid for the format, otherwise `onError` fires and only the background renders. |
 | format | `BarcodeFormat` | `'code128'` | Any bwip-js `bcid` (typed union of all 110). |
-| options | `Record<string, string \| number \| boolean>` | (none) | Passed to the encoder: `includecheck`, `parse`, `parsefnc`, `eclevel`, `columns`, `rows`, `version`, `mode`… Drawing-only options (`includetext`, `showborder`, `height`…) are ignored. |
+| encoderOptions | `Record<string, string \| number \| boolean>` | (none) | Passed to the encoder: `includecheck`, `parse`, `parsefnc`, `eclevel`, `columns`, `rows`, `version`, `mode`… Drawing-only options (`includetext`, `showborder`, `height`…) are ignored. |
 | size | `number` | (none) | 2D: side of the square box. Linear: box width. |
 | width / height | `number` | see [Barcode kinds](#barcode-kinds) | Linear bars stretch to the box, 2D symbols keep their aspect and are centered. |
-| quietZone | `number` (modules) | see [Barcode kinds](#barcode-kinds) | Linear: left / right, top / bottom use at most 10% of the height. |
+| quietZone | `number` (dots, bar widths for linear) | see [Barcode kinds](#barcode-kinds) | Linear: left / right, top / bottom use at most 10% of the height. |
 | containerStyle | `ViewStyle` | (none) | Barcode box (shadow, border…). |
-| cornerRadius | `number` | `0` | Background corner radius. |
-| color / backgroundColor | `string` | `'#000000'` / `'#FFFFFF'` | Bar / module and background colors. |
-| bullseyeColor | `string` | module fill | MaxiCode only. |
-| moduleShape | `'square' \| 'rounded' \| 'dot'` | `'square'` (`'dot'` for DotCode) | 2D only. |
-| moduleScale | `number` (0–1] | `1` | 2D / MaxiCode only, bars keep their width so the code stays readable. |
+| borderRadius | `number` | `0` | Background corner radius. |
+| color / backgroundColor | `string` | `'#000000'` / `'#FFFFFF'` | Bar / dot and background colors. |
+| bullseyeColor | `string` | dot fill | MaxiCode only. |
+| dotShape | `'square' \| 'rounded' \| 'circle'` | `'square'` (`'circle'` for DotCode) | 2D only. |
+| dotScale | `number` (0–1] | `1` | 2D / MaxiCode only, bars keep their width so the code stays readable. |
 | barRadius | `number` | `0` | Linear only, rounded bar corners. |
-| displayValue | `boolean` | `true` for linear | Shows `value` as the label (monospace), `label` overrides the text. |
+| showValue | `boolean` | `true` for linear | Shows `value` as the label (monospace), `label` overrides the text. |
 | labelGap | `number` | `8` | Space between code and label. |
 | animation | `AnimationType` | `'sweep'` | `ripple` grows from the middle, `spiral` / `random` / `fade` / `scale` / `none` as for QR. |
-| moduleTransition | `'pop' \| 'grow'` | `'grow'` linear, `'pop'` 2D | Linear: `grow` rises from the bar bottom, `pop` opens from the middle. |
-| timeline | `Partial<Timeline>` | `DEFAULT_TIMELINE` | `module*` for bars / modules, `finder*` for the MaxiCode bullseye, `label*` for the text. |
+| dotTransition | `'pop' \| 'grow'` | `'grow'` linear, `'pop'` 2D | Linear: `grow` rises from the bar bottom, `pop` opens from the middle. |
+| timeline | `Partial<Timeline>` | `DEFAULT_TIMELINE` | `dot*` for bars / dots, `finder*` for the MaxiCode bullseye, `label*` for the text. |
 
 ### Barcode kinds
 
@@ -492,15 +496,15 @@ Three kinds of symbol are rendered, picked from `format`. `getBarcodeKind(format
 
 | Kind | Formats | Elements | Default box | Default quiet zone |
 |---|---|---|---|---|
-| `linear` | EAN, UPC, Code 128, Code 39, ITF, postal 4-state… | bars (postal bars keep their partial heights) | `300 × 120` (`height` = 40% of `width`) | 10 modules left / right |
-| `matrix` | Data Matrix, PDF417, Aztec, QR, DotCode, stacked DataBar, composites… | modules | `200 × 200` | 2 modules |
+| `linear` | EAN, UPC, Code 128, Code 39, ITF, postal 4-state… | bars (postal bars keep their partial heights) | `300 × 120` (`height` = 40% of `width`) | 10 bar widths left / right |
+| `matrix` | Data Matrix, PDF417, Aztec, QR, DotCode, stacked DataBar, composites… | dots | `200 × 200` | 2 dots |
 | `maxicode` | MaxiCode | hexagons + bullseye | `200 × 200` | 1 hexagon |
 
 ### Notes & limitations
 
-- `getModuleOrder` receives `{ row, col, count, x, y }`: for linear codes `row` is `0`, `col` is the bar index and `x` / `y` the bar center (0..1).
-- `AnimatedBarcode` has no `finderAnimation`, logo props or `ecl` (use `options={{ eclevel: 'H' }}` for 2D formats that support it).
-- Changing `value`, size, `ecl`, `quietZone`, `animation`, `direction`, `duration`, `delay`, `loop`, `loopDelay` or `timeline` restarts the animation. Changing colors, gradient, styles, label or logo does not.
+- `getDotOrder` receives `{ row, column, count, x, y }`: for linear codes `row` is `0`, `column` is the bar index and `x` / `y` the bar center (0..1).
+- `AnimatedBarcode` has no `finderAnimation`, logo props or `errorCorrection` (use `encoderOptions={{ eclevel: 'H' }}` for 2D formats that support it).
+- Changing `value`, size, `errorCorrection`, `quietZone`, `animation`, `direction`, `duration`, `delay`, `loop`, `loopDelay` or `timeline` restarts the animation. Changing colors, gradient, styles, label or logo does not.
 - **Bundle size:** bwip-js ships the full Barcode Writer in Pure PostScript encoder, about 2 MB of JS before minification. It is bundled even if you only use `AnimatedQRCode`.
 - **Human readable text:** linear barcodes show the value as one centered line. EAN / UPC style digits split around the guard bars are not drawn.
 
@@ -520,7 +524,7 @@ type BarcodeFormatInfo = {
   name: string;            // e.g. 'Code 39'
   kind: 'linear' | 'matrix' | 'maxicode';
   sample: string;          // a valid value for this format
-  options?: BarcodeOptions; // encoder options the format needs
+  encoderOptions?: BarcodeEncoderOptions; // encoder options the format needs
 };
 ```
 
@@ -528,7 +532,7 @@ type BarcodeFormatInfo = {
 import { BARCODE_FORMATS } from 'react-native-animated-codes';
 
 const info = BARCODE_FORMATS.find((f) => f.format === 'code39');
-// { format: 'code39', name: 'Code 39', kind: 'linear', sample: 'THIS IS CODE 39', options: { includecheck: true, ... } }
+// { format: 'code39', name: 'Code 39', kind: 'linear', sample: 'THIS IS CODE 39', encoderOptions: { includecheck: true, ... } }
 ```
 
 Everything the package exports:
@@ -546,9 +550,9 @@ import AnimatedQRCode, {          // default export = AnimatedQRCode
 import type {
   AnimatedQRCodeProps, AnimatedQRCodeRef,
   AnimatedBarcodeProps, AnimatedBarcodeRef,
-  AnimationType, BarcodeFormat, BarcodeFormatInfo, BarcodeKind, BarcodeOptions,
+  AnimationType, BarcodeFormat, BarcodeFormatInfo, BarcodeKind, BarcodeEncoderOptions,
   ErrorCorrectionLevel, FinderAnimation, FinderShape, Gradient, LabelPosition,
-  LogoAnimation, ModuleContext, ModuleOrder, ModuleShape, ModuleTransition,
+  LogoAnimation, DotContext, DotOrder, DotShape, DotTransition,
   Point, SweepDirection, Timeline,
 } from 'react-native-animated-codes';
 ```
@@ -585,11 +589,11 @@ moduleNameMapper: {
 ### Only a blank box is shown
 
 - The value is not valid for the format (or the size is invalid). Add `onError={(e) => console.warn(e.message)}` to see why.
-- Use `BARCODE_FORMATS` to get a working sample value and the options a format needs.
+- Use `BARCODE_FORMATS` to get a working sample value and the encoder options a format needs.
 
 ### The QR code with a logo does not scan
 
-- Increase error correction (`ecl="Q"` or `ecl="H"`), make the logo smaller, or add `quietZone={2}`.
+- Increase error correction (`errorCorrection="quartile"` or `errorCorrection="high"`), make the logo smaller, or add `quietZone={2}`.
 
 ### The barcode does not scan
 
@@ -597,11 +601,11 @@ moduleNameMapper: {
 
 ### Animation is slow on low-end Android with long values
 
-- Very long values produce dense codes (thousands of modules). Prefer `animation="fade"` or `"scale"` for them.
+- Very long values produce dense codes (thousands of dots). Prefer `animation="fade"` or `"scale"` for them.
 
 ### The animation restarts on every render
 
-- Inline `getModuleOrder` functions are new each render. Define them outside the component or wrap them in `useCallback`. (Inline `timeline` / `options` objects are fine, they are compared by content.)
+- Inline `getDotOrder` functions are new each render. Define them outside the component or wrap them in `useCallback`. (Inline `timeline` / `encoderOptions` objects are fine, they are compared by content.)
 
 ## Example app
 

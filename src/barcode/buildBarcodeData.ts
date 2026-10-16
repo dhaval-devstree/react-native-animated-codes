@@ -1,6 +1,6 @@
 import { clamp01 } from '../easing';
 import { pseudoRandom } from '../order';
-import { modulePath } from '../shapes';
+import { dotPath } from '../shapes';
 import { barPath, hexPath } from './barcodeShapes';
 import { encodeBarcode } from './encode';
 import type { BarcodeBuildOptions, BarcodeData } from '../types';
@@ -23,15 +23,15 @@ const LINEAR_MAX_VERTICAL_INSET = 0.1;
 const safeOrder = (v: number) => (Number.isNaN(v) ? 0 : clamp01(v));
 
 export const buildBarcodeData = (value: string, options: BarcodeBuildOptions): BarcodeData => {
-  const { format, width, height, quietZone, shape, moduleScale, barRadius, order, timeline } = options;
+  const { format, width, height, quietZone, shape, dotScale, barRadius, order, timeline } = options;
   if (typeof value !== 'string' || value.length === 0) throw new Error('AnimatedBarcode: `value` must be a non-empty string');
   if (!(width > 0) || !(height > 0)) throw new Error('AnimatedBarcode: width and height must be > 0');
-  if (!(moduleScale > 0 && moduleScale <= 1)) throw new Error('AnimatedBarcode: `moduleScale` must be in (0, 1]');
+  if (!(dotScale > 0 && dotScale <= 1)) throw new Error('AnimatedBarcode: `dotScale` must be in (0, 1]');
   if (!(quietZone >= 0)) throw new Error('AnimatedBarcode: `quietZone` must be >= 0');
 
-  const symbol = encodeBarcode(format, value, options.options);
+  const symbol = encodeBarcode(format, value, options.encoderOptions);
   const startOf = (rank: number, i: number, j: number) =>
-    timeline.moduleStart + safeOrder(rank) * timeline.moduleSpread + pseudoRandom(i, j) * timeline.moduleJitter;
+    timeline.dotStart + safeOrder(rank) * timeline.dotSpread + pseudoRandom(i, j) * timeline.dotJitter;
 
   const elements: number[] = [];
   let finalPath = '';
@@ -49,7 +49,7 @@ export const buildBarcodeData = (value: string, options: BarcodeBuildOptions): B
       const w = bar.w * scaleX;
       const y = insetY + bar.top * barsHeight;
       const h = bar.h * barsHeight;
-      const rank = order({ row: 0, col: i, count, x: (x + w / 2 - offsetX) / codeWidth, y: (y + h / 2 - insetY) / barsHeight });
+      const rank = order({ row: 0, column: i, count, x: (x + w / 2 - offsetX) / codeWidth, y: (y + h / 2 - insetY) / barsHeight });
       elements.push(x, y, w, h, startOf(rank, 0, i));
       finalPath += barPath(x, y, w, h, barRadius);
     });
@@ -62,10 +62,10 @@ export const buildBarcodeData = (value: string, options: BarcodeBuildOptions): B
     const cell = Math.min(width / (cols + quietZone * 2), height / (rows + quietZone * 2));
     const offsetX = (width - cols * cell) / 2;
     const offsetY = (height - rows * cell) / 2;
-    const half = (cell * moduleScale) / 2;
+    const half = (cell * dotScale) / 2;
     const count = Math.max(cols, rows);
     // Merged runs give a seamless final render, only possible for full-size squares
-    const mergeRuns = shape === 'square' && moduleScale === 1;
+    const mergeRuns = shape === 'square' && dotScale === 1;
 
     for (let i = 0; i < rows; i++) {
       let runStart = -1;
@@ -74,12 +74,12 @@ export const buildBarcodeData = (value: string, options: BarcodeBuildOptions): B
         if (isDark) {
           const cx = offsetX + j * cell + cell / 2;
           const cy = offsetY + i * cell + cell / 2;
-          const rank = order({ row: i, col: j, count, x: (j + 0.5) / cols, y: (i + 0.5) / rows });
+          const rank = order({ row: i, column: j, count, x: (j + 0.5) / cols, y: (i + 0.5) / rows });
           elements.push(cx, cy, startOf(rank, i, j));
           if (mergeRuns) {
             if (runStart < 0) runStart = j;
           } else {
-            finalPath += modulePath(cx, cy, half, shape);
+            finalPath += dotPath(cx, cy, half, shape);
           }
         } else if (mergeRuns && runStart >= 0) {
           const x0 = offsetX + runStart * cell;
@@ -97,18 +97,18 @@ export const buildBarcodeData = (value: string, options: BarcodeBuildOptions): B
   const scale = Math.min(width / (MAXI_WIDTH + quietZone * MAXI_COL * 2), height / (MAXI_HEIGHT + quietZone * MAXI_COL * 2));
   const offsetX = (width - MAXI_WIDTH * scale) / 2;
   const offsetY = (height - MAXI_HEIGHT * scale) / 2;
-  const halfW = (MAXI_HEX_W * scale * moduleScale) / 2;
-  const halfH = (MAXI_HEX_H * scale * moduleScale) / 2;
+  const halfW = (MAXI_HEX_W * scale * dotScale) / 2;
+  const halfH = (MAXI_HEX_H * scale * dotScale) / 2;
 
   for (const index of symbol.hexes) {
-    const col = index % 30;
+    const column = index % 30;
     const row = Math.floor(index / 30);
-    const ux = col * MAXI_COL + (row & 1 ? MAXI_COL : MAXI_COL / 2);
+    const ux = column * MAXI_COL + (row & 1 ? MAXI_COL : MAXI_COL / 2);
     const uy = MAXI_HEX_H / 2 + row * MAXI_ROW;
     const cx = offsetX + ux * scale;
     const cy = offsetY + uy * scale;
-    const rank = order({ row, col, count: 33, x: ux / MAXI_WIDTH, y: uy / MAXI_HEIGHT });
-    elements.push(cx, cy, startOf(rank, row, col));
+    const rank = order({ row, column, count: 33, x: ux / MAXI_WIDTH, y: uy / MAXI_HEIGHT });
+    elements.push(cx, cy, startOf(rank, row, column));
     finalPath += hexPath(cx, cy, halfW, halfH);
   }
 
