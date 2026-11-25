@@ -5,7 +5,6 @@
   "license": "MIT",
   "main": "lib/commonjs/index.js",
   "types": "lib/commonjs/index.d.ts",
-  "typings": "src/index.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dhaval-devstree/react-native-animated-codes"
